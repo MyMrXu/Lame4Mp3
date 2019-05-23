@@ -9,6 +9,8 @@ import android.media.MediaCodecList;
 import android.media.MediaFormat;
 import android.media.MediaRecorder;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -58,7 +60,7 @@ public class Mp3Recorder {
     private final int encodec_buffer_size = 1920;
     public static final int ENCODEC_BITRATE_1600HZ = 1600;
     public static final int ENCODEC_BITRATE_3200HZ = 3200;
-
+    private Handler mHandler;
     public static final int[] AUDIO_SAMPLING_RATES = {96000, // 0
             88200, // 1
             64000, // 2
@@ -111,7 +113,23 @@ public class Mp3Recorder {
         this.encodec_bitrate = encodec_bitrate;
         this.encodec_samplerate = encodec_samplerate;
         this.mode = mode;
+        mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what) {
+                    case 0x111:
+                        listener.onDBChanged(mCurrentDB);
+                        mHandler.sendEmptyMessageDelayed(0x111, 150);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
     }
+
+    private int mCurrentDB;
 
     public static final class Builder {
         private int audioSource = AUDIO_SOURCE_MIC;
@@ -213,7 +231,7 @@ public class Mp3Recorder {
                     int readBytes = 0;
                     byte[] audioBuffer = new byte[2048];
                     byte[] mp3Buffer = new byte[1024];
-
+                    mHandler.sendEmptyMessage(0x111);
                     // 如果文件路径不存在，则创建
                     if (TextUtils.isEmpty(filePath) || TextUtils.isEmpty(fileName)) {
                         Log.i(TAG, "文件路径或文件名为空");
@@ -225,7 +243,6 @@ public class Mp3Recorder {
                     }
                     String mp3Path = file.getAbsoluteFile().toString() + File.separator + fileName + ".mp3";
                     FileOutputStream fops = null;
-                    int retry;
                     try {
                         while (isRecording) {
                             readBytes = mAudioRecord.read(audioBuffer, 0, bufferSizeInBytes);
@@ -242,9 +259,7 @@ public class Mp3Recorder {
                             // 平方和除以数据总长度，得到音量大小。
                             double mean = v / (double) readBytes;
                             double volume = 10 * Math.log10(mean * 2);
-
-                            listener.onDBChanged((int) volume);
-
+                            mCurrentDB = (int) volume;
                             if (readBytes > 0) {
                                 if (mode == MODE_AAC || mode == MODE_BOTH) {
                                     // 将PCM编码为AAC
@@ -296,11 +311,13 @@ public class Mp3Recorder {
                         Log.i(TAG, "释放AudioRecorder资源");
                         stopAudioRecorder();
                         stopMediaCodec();
+                        mHandler.removeMessages(0x111);
 
                     }
                 } finally {
                     Log.i(TAG, "释放Lame库资源");
                     stopLameMp3();
+                    mHandler.removeMessages(0x111);
                 }
             }
         }).start();
