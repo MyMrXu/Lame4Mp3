@@ -143,48 +143,64 @@ public class Mp3Recorder {
         private int mode = -1;
 
         // 设置音频源
-        public void setAudioSource(int audioSource) {
+        public Builder setAudioSource(int audioSource) {
             this.audioSource = audioSource;
+            return this;
         }
 
         // 设置采样率
-        public void setAudioSampleRare(int sampleRateInHz) {
+        public Builder setAudioSampleRare(int sampleRateInHz) {
             this.sampleRateInHz = sampleRateInHz;
+            return this;
+
         }
 
         // 设置音频声道
-        public void setAudioChannelConfig(int channelConfig) {
+        public Builder setAudioChannelConfig(int channelConfig) {
             this.channelConfig = channelConfig;
+            return this;
+
         }
 
         // 采样精度
-        public void setAduioFormat(int audioFormat) {
+        public Builder setAduioFormat(int audioFormat) {
             this.audioFormat = audioFormat;
+            return this;
+
         }
 
         //编码输出声道数量
-        public void setLameOutChannel(int outChannel) {
+        public Builder setLameOutChannel(int outChannel) {
             this.outChannel = outChannel;
+            return this;
+
         }
 
         //编码比特率
-        public void setLameBitRate(int bitRate) {
+        public Builder setLameBitRate(int bitRate) {
             this.bitRate = bitRate;
+            return this;
+
         }
 
         // 编码器比特率
-        public void setMediaCodecBitRate(int encodec_bitrate) {
+        public Builder setMediaCodecBitRate(int encodec_bitrate) {
             this.encodec_bitrate = encodec_bitrate;
+            return this;
+
         }
 
         // 编码器音频采样率
-        public void setMediaCodecSampleRate(int encodec_samplerate) {
+        public Builder setMediaCodecSampleRate(int encodec_samplerate) {
             this.encodec_samplerate = encodec_samplerate;
+            return this;
+
         }
 
         // 设置模式
-        public void setMode(int mode) {
+        public Builder setMode(int mode) {
             this.mode = mode;
+            return this;
         }
 
         public Mp3Recorder build() {
